@@ -20,7 +20,7 @@ app.get('/screenshot', async (req, res) => {
     const page = await browser.newPage()
 
     await page.setViewport({ width: 1280, height: 720 }) // Set desired resolution
-    await page.goto(url, { waitUntil: 'load', timeout: 10000 })
+    await page.goto(url, { waitUntil: 'load', timeout: 30000 })
 
     const screenshot = await page.screenshot({ type: 'jpeg', quality: 80 })
 

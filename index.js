@@ -1,7 +1,9 @@
 import express from 'express'
 import puppeteer from 'puppeteer'
+import cors from 'cors';
 
 const app = express()
+app.use(cors()); // Enable CORS
 const PORT = 3201
 
 app.get('/screenshot', async (req, res) => {

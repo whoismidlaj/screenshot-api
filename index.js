@@ -24,31 +24,34 @@ app.post('/screenshot', async (req, res) => {
     const page = await browser.newPage();
     await page.setViewport({ width: 1280, height: 720 });
 
-    // Navigate to the URL with better error handling
-    await page.goto(url, { waitUntil: 'networkidle2', timeout: 60000 })
-      .catch(error => {
-        throw new Error(`Failed to load URL: ${error.message}`);
-      });
+    // Navigate to the URL with more time for complex pages
+    await page.goto(url, { 
+      waitUntil: 'networkidle0', // Wait until all network connections are idle
+      timeout: 60000 
+    });
+    
+    // Optional: Wait a bit more to ensure everything is loaded
+    await page.waitForTimeout(1000);
 
-    // Capture the screenshot
+    // Capture the screenshot - try PNG for better compatibility
     const screenshot = await page.screenshot({ 
-      type: 'jpeg', 
-      quality: 80,
+      type: 'png', // Using PNG instead of JPEG for better compatibility
       fullPage: false
     });
 
     await browser.close();
 
     if (base64) {
-      // Properly encode the image as base64
-      const base64Image = screenshot.toString('base64');
-      res.json({ image: `data:image/jpeg;base64,${base64Image}` });
+      const base64String = screenshot.toString('base64');
+      res.json({ image: `data:image/png;base64,${base64String}` });
     } else {
-      // Set proper headers for binary response
-      res.setHeader('Content-Type', 'image/jpeg');
-      res.setHeader('Content-Length', screenshot.length);
-      res.setHeader('Cache-Control', 'no-cache');
-      res.send(screenshot);
+      // Ensure proper binary transfer
+      res.writeHead(200, {
+        'Content-Type': 'image/png',
+        'Content-Length': screenshot.length,
+        'Content-Disposition': 'inline; filename="screenshot.png"'
+      });
+      res.end(screenshot);
     }
   } catch (error) {
     console.error('Screenshot error:', error);
